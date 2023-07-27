@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-casper-contract = "1.4.4"
-casper-types = "1.5.0"
+base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
+casper-contract = "2.0.0"
+casper-types = "2.0.0"
 
 [[bin]]
 name = "contract"
@@ -17,4 +18,3 @@ test = false
 [profile.release]
 codegen-units = 1
 lto = true
-
