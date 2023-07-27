@@ -5,17 +5,16 @@ authors = ["Jonas Pauli"]
 edition = "2021"
 
 [dev-dependencies]
-base64 = "0.13.0"
-blake2 = "0.9.2"
+base64 = { version = "0.21.2", default-features = false, features = ["alloc"] }
 casper-engine-test-support = { version = "4.0.0", features = ["test-support"] }
 casper-execution-engine = "4.0.0"
 casper-hashing = { version = "1.4.4" }
 casper-types = { version = "2.0.0", default-features = false, features = ["std"] }
 casper-contract = { version = "2.0.0", default-features = false, features = ["std"] }
-hex = "0.4.3"
+hex = { version = "0.4.3", default-features = false }
 
 [[bin]]
-name = "erc1155-tests"
+name = "amm-tests"
 path = "src/integration_tests.rs"
 bench = false
 doctest = false
