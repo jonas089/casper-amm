@@ -31,7 +31,7 @@ mod tests {
 
         // call a contract that calls the token0: ContractHash transfer endpoint
         // this does not seem to work.
-        fixture.cross_contract_transfer(fixture.ali, Key::from(fixture.bob), U256::from(5000), token0, Key::from(fixture.zero));
+        fixture.cross_contract_transfer(fixture.ali, Key::from(fixture.bob), U256::from(5000), token0, contract_package_key.clone());
         /* both contract & cep18 use immediate caller
             pub(crate) fn get_immediate_caller_address() -> Result<Key, Error> {
                 let call_stack = runtime::get_call_stack();
