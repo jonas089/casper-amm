@@ -77,13 +77,15 @@ pub extern "C" fn initialise(){
 #[no_mangle]
 pub extern "C" fn test_transfer(){
     let recipient: Key = runtime::get_named_arg("recipient");
-    let amount: U256 = runtime::get_named_arg("amount");    
+    let amount: U256 = runtime::get_named_arg("amount");
+    let should_be_sender: Key = runtime::get_named_arg("should_be_sender");    
     // a cep18 hash
     let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
     runtime::call_contract::<()>(
         contract_hash,
         "transfer",
         runtime_args!{
+            "should_be_sender" => should_be_sender,
             "recipient" => recipient,
             "amount" => amount
         }

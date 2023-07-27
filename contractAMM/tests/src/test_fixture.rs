@@ -210,8 +210,9 @@ impl TestEnv {
             .commit();
     }*/
     // call transfer directly on cep18
-    pub fn transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, contract_hash: ContractHash){
+    pub fn transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, contract_hash: ContractHash, should_be_sender: Key){
         let session_args = runtime_args!{
+            "should_be_sender" => should_be_sender,
             "recipient" => recipient,
             "amount" => amount
         };
@@ -228,8 +229,9 @@ impl TestEnv {
             .commit();
     }
     // call transfer through contract
-    pub fn cross_contract_transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, cep18_contract_hash: ContractHash){
+    pub fn cross_contract_transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, cep18_contract_hash: ContractHash, should_be_sender: Key){
         let session_args = runtime_args!{
+            "should_be_sender" => should_be_sender,
             "recipient" => recipient,
             "amount" => amount,
             // the cep 18 contract
@@ -248,7 +250,7 @@ impl TestEnv {
             .exec(transfer_request).expect_success()
             .commit();
     }
-    /* 
+    
     pub fn transfer_from(&mut self, msg_sender: AccountHash, recipient: Key, owner: Key, amount: U256, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "recipient" => recipient,
@@ -305,7 +307,7 @@ impl TestEnv {
             .exec(swap_request)
             .commit();
     }
-    */
+    
     pub fn balance_of(&self, account: Key, contract_name: &str) -> U256{
         let seed_uref = self.seed_uref_contract("balances", contract_name);
         let dictionary_key = make_dictionary_item_key(account);

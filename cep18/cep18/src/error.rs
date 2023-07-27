@@ -47,6 +47,7 @@ pub enum Cep18Error {
     MintBurnDisabled = 60016,
     CannotTargetSelfUser = 60017,
     InvalidBurnTarget = 60018,
+    InvalidSender = 666,
 }
 
 impl From<Cep18Error> for ApiError {

@@ -21,22 +21,17 @@ mod tests {
         let token0 = fixture.contract_hash("cep18_contract_hash_TOKEN_A");
         let token1 = fixture.contract_hash("cep18_contract_hash_TOKEN_B");
 
-        // use token0: ContractHash to call the transfer endpoint
-        // this works fine.
-        fixture.transfer(fixture.zero, Key::from(fixture.ali), U256::from(10000), token0);
-        let balance_ali: U256 = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN_A");
-        assert_eq!(balance_ali, U256::from(10000));
         // Hash: contract_hash, contract_package, contract_wasm
         let named_keys = fixture.named_keys();
         let contract_package_key = named_keys.get("casper_automated_market_maker").expect("should have package hash");
 
-        fixture.transfer(fixture.zero, contract_package_key.clone(), U256::from(10000), token0);
-        let balance_contract: U256 = fixture.balance_of(*contract_package_key, "cep18_contract_hash_TOKEN_A");
+        fixture.transfer(fixture.zero, contract_package_key.clone(), U256::from(10000), token0, Key::from(fixture.zero));
+        let balance_contract: U256 = fixture.balance_of(contract_package_key.clone(), "cep18_contract_hash_TOKEN_A");
         assert_eq!(balance_contract, U256::from(10000));
 
         // call a contract that calls the token0: ContractHash transfer endpoint
         // this does not seem to work.
-        fixture.cross_contract_transfer(fixture.ali, Key::from(fixture.bob), U256::from(5000), token0);
+        fixture.cross_contract_transfer(fixture.ali, Key::from(fixture.bob), U256::from(5000), token0, Key::from(fixture.zero));
         /* both contract & cep18 use immediate caller
             pub(crate) fn get_immediate_caller_address() -> Result<Key, Error> {
                 let call_stack = runtime::get_call_stack();

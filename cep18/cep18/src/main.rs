@@ -148,6 +148,10 @@ pub extern "C" fn increase_allowance() {
 #[no_mangle]
 pub extern "C" fn transfer() {
     let sender = utils::get_immediate_caller_address().unwrap_or_revert();
+    let should_be_sender: Key = runtime::get_named_arg("should_be_sender");
+    if sender != should_be_sender{
+        revert(Cep18Error::InvalidSender);
+    }
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     if sender == recipient {
         revert(Cep18Error::CannotTargetSelfUser);
