@@ -22,8 +22,6 @@ use casper_contract::{
 mod error;
 mod detail;
 use crate::detail::get_immediate_caller_address;
-mod address;
-use crate::address::Address;
 use error::Error;
 
 // experimental square root function
@@ -77,8 +75,24 @@ pub extern "C" fn initialise(){
 }
 
 #[no_mangle]
+pub extern "C" fn test_transfer(){
+    let recipient: Key = runtime::get_named_arg("recipient");
+    let amount: U256 = runtime::get_named_arg("amount");    
+    // a cep18 hash
+    let contract_hash: ContractHash = runtime::get_named_arg("contract_hash");
+    runtime::call_contract::<()>(
+        contract_hash,
+        "transfer",
+        runtime_args!{
+            "recipient" => recipient,
+            "amount" => amount
+        }
+    );
+}
+
+#[no_mangle]
 pub extern "C" fn _mint(){
-    let recipient: Address = runtime::get_named_arg("recipient");
+    let recipient: Key = runtime::get_named_arg("recipient");
     let amount: U256 = runtime::get_named_arg("amount");
     let token_uref: URef = match runtime::get_key("token"){
         Some(key) => key,
@@ -99,7 +113,7 @@ pub extern "C" fn _mint(){
 
 #[no_mangle]
 pub extern "C" fn _burn(){
-    let owner: Address = runtime::get_named_arg("owner");
+    let owner: Key = runtime::get_named_arg("owner");
     let amount: U256 = runtime::get_named_arg("amount");
     let token_uref: URef = match runtime::get_key("token"){
         Some(key) => key,
@@ -137,7 +151,7 @@ pub extern "C" fn _update(){
 #[no_mangle]
 pub extern "C" fn swap(){
     // owner needs to approve this contract as a spender first
-    let owner: Address = get_immediate_caller_address().unwrap_or_revert();
+    let owner: Key = get_immediate_caller_address().unwrap_or_revert();
     let from_token_hash: ContractHash = runtime::get_named_arg("fromToken");
     let amount: U256 = runtime::get_named_arg("amount");
     if amount <= U256::from(0){
@@ -181,6 +195,11 @@ pub extern "C" fn swap(){
         reserveIn = reserve1;
         reserveOut = reserve0;
     };
+    let token0_uref: URef = match runtime::get_key("token0"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let tokenIn: ContractHash = storage::read_or_revert(token0_uref);
     // get the key of this contract
     let contract_key_uref: URef = match runtime::get_key("amm_account"){
         Some(key) => key,
@@ -192,8 +211,8 @@ pub extern "C" fn swap(){
         tokenIn,
         "transfer_from",
         runtime_args!{
-            "owner" => Key::from(owner),
             "recipient" => contract_key,
+            "owner" => Key::from(owner),
             "amount" => amount
         }
     );
@@ -202,9 +221,8 @@ pub extern "C" fn swap(){
     let amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
     runtime::call_contract::<()>(
         tokenOut,
-        "transfer_from",
+        "transfer",
         runtime_args!{
-            "owner" => contract_key,
             "recipient" => Key::from(owner),
             "amount" => amountOut
         }
@@ -240,8 +258,16 @@ pub extern "C" fn call(){
             EntryPointAccess::Public,
             EntryPointType::Contract
         );
+        let test_transfer: EntryPoint = EntryPoint::new(
+            "test_transfer",
+            vec![],
+            CLType::Unit,
+            EntryPointAccess::Public,
+            EntryPointType::Contract
+        );
         entry_points.add_entry_point(initialise);
         entry_points.add_entry_point(swap);
+        entry_points.add_entry_point(test_transfer);
         entry_points
     };
     let named_keys = {
@@ -276,7 +302,8 @@ pub extern "C" fn call(){
         entry_points,
         Some(named_keys),
         Some("casper_automated_market_maker".to_string()),
-        Some("casper_amm_key".to_string())
+        // None 
+        Some("amm_access_key".to_string())
     );
     runtime::put_key("casper_automated_market_maker", Key::from(contract_hash));
     runtime::call_contract::<()>(

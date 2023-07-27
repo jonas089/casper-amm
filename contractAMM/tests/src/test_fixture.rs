@@ -185,14 +185,14 @@ impl TestEnv {
             "token" => c_contract_hash
         };
         let contract_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest = 
-            ExecuteRequestBuilder::standard(self.zero, "../wasm/swap0.wasm", session_args)
+            ExecuteRequestBuilder::standard(self.zero, "../wasm/contract.wasm", session_args)
             .build();
         self.context
             .exec(contract_exec_request)
             .expect_success()
             .commit();
     }
-    
+    /* disabled,- premine only
     pub fn mint(&mut self, owner: Key, amount: U256, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "owner" => owner,
@@ -208,8 +208,8 @@ impl TestEnv {
         self.context
             .exec(mint_request)
             .commit();
-    }
-
+    }*/
+    // call transfer directly on cep18
     pub fn transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "recipient" => recipient,
@@ -224,10 +224,31 @@ impl TestEnv {
         ).build();
 
         self.context
-            .exec(transfer_request)
+            .exec(transfer_request).expect_success()
             .commit();
     }
+    // call transfer through contract
+    pub fn cross_contract_transfer(&mut self, msg_sender: AccountHash, recipient: Key, amount: U256, cep18_contract_hash: ContractHash){
+        let session_args = runtime_args!{
+            "recipient" => recipient,
+            "amount" => amount,
+            // the cep 18 contract
+            "contract_hash" => cep18_contract_hash
+        };
 
+        let transfer_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            // the contract that's supposed to call the cep18
+            self.contract_hash("casper_automated_market_maker"),
+            "test_transfer",
+            session_args
+        ).build();
+
+        self.context
+            .exec(transfer_request).expect_success()
+            .commit();
+    }
+    /* 
     pub fn transfer_from(&mut self, msg_sender: AccountHash, recipient: Key, owner: Key, amount: U256, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "recipient" => recipient,
@@ -284,7 +305,7 @@ impl TestEnv {
             .exec(swap_request)
             .commit();
     }
-
+    */
     pub fn balance_of(&self, account: Key, contract_name: &str) -> U256{
         let seed_uref = self.seed_uref_contract("balances", contract_name);
         let dictionary_key = make_dictionary_item_key(account);
@@ -296,4 +317,5 @@ impl TestEnv {
             .into_t()
             .unwrap()
     }
+    
 }
