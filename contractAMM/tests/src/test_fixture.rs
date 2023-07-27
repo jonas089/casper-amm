@@ -97,20 +97,31 @@ impl TestEnv {
             "name" => "TOKEN_A".to_string(),
             "symbol" => "ATKN".to_string(),
             "decimals" => u8::from(18),
-            "total_supply" => U256::from(1000000000u128),
+            // 1000_000 Tokens (1 * 10 ** 24 WEI)
+            "total_supply" => U256::from(1_000_000_000_000_000_000_000_000u128),
         };
         let session_args_b = runtime_args! {
             // initialise cep18
             "name" => "TOKEN_B".to_string(),
             "symbol" => "BTKN".to_string(),
             "decimals" => u8::from(18),
-            "total_supply" => U256::from(1000000000u128),
+            "total_supply" => U256::from(1_000_000_000_000_000_000_000_000u128),
+        };
+        let session_args_c = runtime_args! {
+            // initialise cep18
+            "name" => "TOKEN_C".to_string(),
+            "symbol" => "CTKN".to_string(),
+            "decimals" => u8::from(18),
+            "total_supply" => U256::from(1_000_000_000_000_000_000_000_000u128),
         };
         let a_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest =
             ExecuteRequestBuilder::standard(self.ali, "../wasm/cep18.wasm", session_args_a)
             .build();
         let b_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest = 
             ExecuteRequestBuilder::standard(self.ali, "../wasm/cep18.wasm", session_args_b)
+            .build();
+        let c_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest =
+            ExecuteRequestBuilder::standard(self.ali, "../wasm/cep18.wasm", session_args_c)
             .build();
         self.context
             .exec(a_exec_request)
@@ -120,20 +131,36 @@ impl TestEnv {
             .exec(b_exec_request)
             .expect_success()
             .commit();
-    }
-    
-    pub fn mint(&mut self, owner: Key, amount: U256){
+        self.context
+            .exec(c_exec_request)
+            .expect_success()
+            .commit();
         let a_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_A");
         let b_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_B");
-
+        let c_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_C");
+        let session_args = runtime_args! {
+            "token0" => a_contract_hash,
+            "token1" => b_contract_hash,
+            "token" => c_contract_hash
+        };
+        let contract_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest = 
+            ExecuteRequestBuilder::standard(self.ali, "../wasm/swap0.wasm", session_args)
+            .build();
+        self.context
+            .exec(contract_exec_request)
+            .expect_success()
+            .commit();
+    }
+    
+    pub fn mint(&mut self, owner: Key, amount: U256, contract_name: &str){
+        let contract_hash = self.contract_hash(contract_name);
         let session_args = runtime_args!{
             "owner" => owner,
             "amount" => amount
         };
-
         let mint_request = ExecuteRequestBuilder::contract_call_by_hash(
             self.default_account(),
-            a_contract_hash,
+            contract_hash,
             "mint",
             session_args
         ).build();
@@ -143,24 +170,63 @@ impl TestEnv {
             .commit();
     }
 
-    pub fn transfer(&mut self, recipient: Key, amount: U256){
-        let a_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_A");
-        let b_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_B");
-
+    pub fn transfer(&mut self, msg_sender: Key, recipient: Key, amount: U256, contract_name: &str){
+        //let a_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_A");
+        //let b_contract_hash = self.contract_hash("cep18_contract_hash_TOKEN_B");
+        let contract_hash = self.contract_hash(contract_name);
         let session_args = runtime_args!{
             "recipient" => recipient,
             "amount" => amount
         };
 
         let transfer_request = ExecuteRequestBuilder::contract_call_by_hash(
-            self.default_account(),
-            a_contract_hash,
+            msg_sender,
+            contract_hash,
             "transfer",
             session_args
         ).build();
 
         self.context
             .exec(transfer_request)
+            .commit();
+    }
+
+    pub fn approve(&mut self, msg_sender: Key, spender: Key, amount: U256, contract_name: &str){
+        let contract_hash = self.contract_hash(contract_name);
+        let session_args = runtime_args! {
+            "spender" => spender,
+            "amount" => amount
+        };
+
+        let approve_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            contract_hash,
+            "approve",
+            session_args
+        ).build();
+
+        self.context
+            .exec(approve_request)
+            .commit();
+    }
+
+    pub fn swap(&mut self, msg_sender: Key, from_token: &str, amount: U256){
+        let contract_hash = self.contract_hash("casper_automated_market_maker");
+        let fromToken = self.contract_hash(from_token);
+        let session_args = runtime_args! {
+            "fromToken" => fromToken,
+            "amount" => amount
+        };
+
+        let swap_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            contract_hash,
+            "swap",
+            session_args
+        ).build();
+
+        self.context
+            .exec(swap_request)
             .commit();
     }
 }

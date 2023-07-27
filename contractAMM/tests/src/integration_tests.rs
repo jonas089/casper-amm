@@ -12,19 +12,6 @@ mod tests {
         let mut fixture: TestEnv = TestEnv::new();
         fixture.install();
     }
-    #[test]
-    fn should_mint_erc20(){
-        let mut fixture: TestEnv = TestEnv::new();
-        fixture.install();
-        fixture.mint(Key::from(fixture.ali), U256::from(100u128));
-    }
-    #[test]
-    fn should_transfer_erc20(){
-        let mut fixture: TestEnv = TestEnv::new();
-        fixture.install();
-        fixture.mint(Key::from(fixture.ali), U256::from(100u128));
-        fixture.transfer(Key::from(fixture.bob), U256::from(100u128));
-    }
 }
 
 fn main() {
