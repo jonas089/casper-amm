@@ -1,38 +1,5 @@
 #[cfg(test)]
 mod test_fixture;
-/*  ISSUES
-#################################################################################################
-#                                                                                               #
-#                                                                                               #
-#        Cross contract tests are not supported :(                                              #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                           Tried to call transfer on a cep18 from within another contract      #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#                                                                                               #
-#           EE tests are disregarded, this contract must be developed on NCTL                   #
-#                                                                                               #
-#                                                                                               #
-#################################################################################################
-
-
-
-
-
-
-
-*/
-
-
-
 
 #[cfg(test)]
 mod tests {
