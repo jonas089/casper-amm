@@ -60,21 +60,16 @@ impl TestContext {
             .map(ContractHash::new)
             .expect("must get contract hash")
     }
-
-    // pub fn seed_uref_contract(&self, name: &str, contract_name: &str) -> URef {
-    //     let contract_key: Key = self.contract_hash_from_named_keys(contract_name).into();
-    //     *self
-    //         .builder
-    //         .query(None, contract_key, &[])
-    //         .expect("contract exists")
-    //         .as_contract()
-    //         .expect("convert contract")
-    //         .named_keys()
-    //         .get(name)
-    //         .expect("must have key")
-    //         .as_uref()
-    //         .expect("must convert to seed uref")
-    // }
+    
+    pub fn contract_hash(&self, name: &str) -> ContractHash{
+        self.builder.get_expected_account(*DEFAULT_ACCOUNT_ADDR)
+            .named_keys()
+            .get(name)
+            .expect("must have contract hash key as part of contract creation")
+            .into_hash()
+            .map(ContractHash::new)
+            .expect("must get contract hash")
+    }
 
     pub fn install(&mut self) {
         let session_args_a = runtime_args! {
@@ -191,41 +186,6 @@ impl TestContext {
             .commit();
     }
 
-    // call transfer through contract
-    pub fn cross_contract_transfer(
-        &mut self,
-        msg_sender: AccountHash,
-        recipient: Key,
-        amount: U256,
-        cep18_contract_hash: ContractHash,
-    ) {
-        let session_args = runtime_args! {
-            "recipient" => recipient,
-            "amount" => amount,
-            // the cep 18 contract
-            "contract_hash" => cep18_contract_hash
-        };
-
-        let tst = self.contract_hash_from_named_keys("casper_automated_market_maker");
-        dbg!(self.named_keys());
-        dbg!(tst);
-
-        let transfer_request = ExecuteRequestBuilder::contract_call_by_hash(
-            msg_sender,
-            // the contract that's supposed to call the cep18
-            self.contract_hash_from_named_keys("casper_automated_market_maker"),
-            "test_transfer",
-            session_args,
-        )
-        .build();
-
-        self.builder
-            .exec(transfer_request)
-            .expect_success()
-            .commit();
-    }
-
-    /*
     pub fn transfer_from(&mut self, msg_sender: AccountHash, recipient: Key, owner: Key, amount: U256, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "recipient" => recipient,
@@ -240,7 +200,7 @@ impl TestContext {
             session_args
         ).build();
 
-        *self.builder
+        self.builder
             .exec(transfer_request)
             .commit();
     }
@@ -258,16 +218,19 @@ impl TestContext {
             session_args
         ).build();
 
-        *self.builder
+        self.builder
             .exec(approve_request)
+            .expect_success()
             .commit();
     }
+    
 
     pub fn swap(&mut self, msg_sender: AccountHash, from_token: &str, amount: U256){
         let contract_hash = self.contract_hash("casper_automated_market_maker");
         let fromToken = self.contract_hash(from_token);
         let session_args = runtime_args! {
             "fromToken" => fromToken,
+            "recipient" => Key::from(self.bob),
             "amount" => amount
         };
 
@@ -278,11 +241,12 @@ impl TestContext {
             session_args
         ).build();
 
-        *self.builder
+        self.builder
             .exec(swap_request)
+            .expect_success()
             .commit();
     }
-    */
+    
 
     pub fn balance_of(&self, account: Key, contract_name: &str) -> U256 {
         let seed_uref: URef = *self

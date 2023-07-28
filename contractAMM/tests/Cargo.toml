@@ -6,9 +6,9 @@ edition = "2021"
 
 [dev-dependencies]
 base64 = { version = "0.21.2", default-features = false, features = ["alloc"] }
-casper-engine-test-support = "5.0.0"
-casper-execution-engine = "5.0.0"
-casper-types = "3.0.0"
+casper-engine-test-support = "4.0.0"
+casper-execution-engine = "4.0.0"
+casper-types = "2.0.0"
 
 [[test]]
 name = "my_tests"
