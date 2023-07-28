@@ -188,7 +188,7 @@ pub extern "C" fn call() {
     let token_hash: Key = runtime::get_named_arg("token");
     let token_hash0: Key = runtime::get_named_arg("token0");
     let token_hash1: Key = runtime::get_named_arg("token1");
-    let reserve: Key = storage::new_uref(U256::from(1_000_000_000_000_000_000_000u128)).into();
+    let reserve: Key = storage::new_uref(U256::from(1000u128)).into();
 
     let mut named_keys = NamedKeys::new();
     named_keys.insert("token".to_string(), token_hash);

@@ -23,13 +23,18 @@ mod tests {
         let token1 = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_B");
         let package_key: Key = Key::from(package_hash);
         fixture.transfer(*DEFAULT_ACCOUNT_ADDR, Key::from(fixture.ali), U256::from(5000), token0);
-        fixture.transfer(*DEFAULT_ACCOUNT_ADDR, package_key, U256::from(5000), token1);
+        fixture.transfer(*DEFAULT_ACCOUNT_ADDR, package_key, U256::from(1000), token1);
         fixture.approve(fixture.ali, package_key, U256::from(1000), token0);
         fixture.swap(fixture.ali, "cep18_contract_hash_TOKEN_A", U256::from(1000));
-        let balance_contract = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN_A");
+        let balance_contract0 = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN_A");
         assert_eq!(
-            balance_contract,
+            balance_contract0,
             U256::from(1000)
+        );
+        let balance_contract1 = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN_B");
+        assert_eq!(
+            balance_contract1,
+            U256::from(501)
         );
         let balance_ali = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN_A");
         assert_eq!(
