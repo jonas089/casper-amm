@@ -115,11 +115,30 @@ pub extern "C" fn swap() {
         Some(contract_hash) => ContractHash::from(contract_hash.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),
     };
-    // transfer tokens to contract-caller
+    let reserve0_uref: URef = match runtime::get_key("reserve0"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve1_uref: URef = match runtime::get_key("reserve1"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve0: U256 = storage::read_or_revert(reserve0_uref);
+    let reserve1: U256 = storage::read_or_revert(reserve1_uref);
 
+    let mut tokenIn = token0_hash;
+    let mut tokenOut = token1_hash;
+    let mut reserveIn = reserve0;
+    let mut reserveOut = reserve1;
+    if from_token_hash == token1_hash{
+        tokenIn = token1_hash;
+        tokenOut = token0_hash;
+        reserveIn = reserve1;
+        reserveOut = reserve0;
+    }
     // transfer tokens to contract
     runtime::call_contract::<()>(
-        token0_hash,
+        tokenIn,
         "transfer_from",
         runtime_args! {
             "recipient" => amm_access_key,
@@ -127,6 +146,18 @@ pub extern "C" fn swap() {
             "amount" => amount
         },
     );
+    let amountInWithFee = (amount * 997) / 1000;
+    let amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
+    // transfer tokens to contract-caller
+    runtime::call_contract::<()>(
+        tokenOut,
+        "transfer",
+        runtime_args! {
+            "recipient" => owner,
+            "amount" => amountOut
+        },
+    );
+    // update reserve
 }
 
 #[no_mangle]
@@ -163,6 +194,7 @@ pub extern "C" fn call() {
     named_keys.insert("token".to_string(), token_hash);
     named_keys.insert("token0".to_string(), token_hash0);
     named_keys.insert("token1".to_string(), token_hash1);
+
     named_keys.insert("reserve0".to_string(), reserve);
     named_keys.insert("reserve1".to_string(), reserve);
     let casper_amm_uref: URef = storage::new_uref("");

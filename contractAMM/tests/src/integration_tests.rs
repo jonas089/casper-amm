@@ -20,8 +20,10 @@ mod tests {
         let package_hash =
         fixture.contract_hash("casper_automated_market_maker_package");
         let token0 = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_A");
+        let token1 = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_B");
         let package_key: Key = Key::from(package_hash);
         fixture.transfer(*DEFAULT_ACCOUNT_ADDR, Key::from(fixture.ali), U256::from(5000), token0);
+        fixture.transfer(*DEFAULT_ACCOUNT_ADDR, package_key, U256::from(5000), token1);
         fixture.approve(fixture.ali, package_key, U256::from(1000), token0);
         fixture.swap(fixture.ali, "cep18_contract_hash_TOKEN_A", U256::from(1000));
         let balance_contract = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN_A");
