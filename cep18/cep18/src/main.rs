@@ -148,16 +148,15 @@ pub extern "C" fn increase_allowance() {
 #[no_mangle]
 pub extern "C" fn transfer() {
     let sender = utils::get_immediate_caller_address().unwrap_or_revert();
-    let should_be_sender: Key = runtime::get_named_arg("should_be_sender");
-    if sender != should_be_sender{
-        revert(Cep18Error::InvalidSender);
-    }
     let recipient: Key = runtime::get_named_arg(RECIPIENT);
     if sender == recipient {
         revert(Cep18Error::CannotTargetSelfUser);
     }
     let amount: U256 = runtime::get_named_arg(AMOUNT);
-
+    runtime::print(&format!("transfer"));
+    runtime::print(&format!("sender {:?}", sender));
+    runtime::print(&format!("recipient {:?}", recipient));
+    runtime::print(&format!("amount {:?}", amount));
     transfer_balance(sender, recipient, amount).unwrap_or_revert();
     events::record_event_dictionary(Event::Transfer(Transfer {
         sender,

@@ -6,15 +6,10 @@ edition = "2021"
 
 [dev-dependencies]
 base64 = { version = "0.21.2", default-features = false, features = ["alloc"] }
-casper-engine-test-support = { version = "4.0.0", features = ["test-support"] }
-casper-execution-engine = "4.0.0"
-casper-hashing = { version = "1.4.4" }
-casper-types = { version = "2.0.0", default-features = false, features = ["std"] }
-casper-contract = { version = "2.0.0", default-features = false, features = ["std"] }
-hex = { version = "0.4.3", default-features = false }
+casper-engine-test-support = "5.0.0"
+casper-execution-engine = "5.0.0"
+casper-types = "3.0.0"
 
-[[bin]]
-name = "amm-tests"
+[[test]]
+name = "my_tests"
 path = "src/integration_tests.rs"
-bench = false
-doctest = false

@@ -1,4 +1,4 @@
- //! Error handling on the casper platform.
+//! Error handling on the casper platform.
 use casper_types::ApiError;
 
 /// Errors which can be returned by the library.
