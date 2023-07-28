@@ -96,17 +96,23 @@ pub extern "C" fn _burn() {
     );
 }
 
-#[no_mangle]
-pub extern "C" fn swap() {
+struct AMM{
+    amm_access_key: Key,
+    token_hash: ContractHash,
+    token0_hash: ContractHash,
+    token1_hash: ContractHash,
+}
+
+fn collect() -> AMM{
     let amm_access_uref: URef = match runtime::get_key("casper_amm_key"){
         Some(key) => key,
         None => runtime::revert(ApiError::MissingKey)
     }.into_uref().unwrap_or_revert();
     let amm_access_key: Key = storage::read_or_revert(amm_access_uref);
-    let owner: Key = get_immediate_caller_address().unwrap_or_revert();
-    let amount: U256 = runtime::get_named_arg("amount");
-    let from_token_hash: ContractHash = runtime::get_named_arg("fromToken");
-
+    let token_hash: ContractHash = match runtime::get_key("token") {
+        Some(contract_hash) => ContractHash::from(contract_hash.into_hash().unwrap_or_revert()),
+        None => runtime::revert(ApiError::MissingKey),
+    };
     let token0_hash: ContractHash = match runtime::get_key("token0") {
         Some(contract_hash) => ContractHash::from(contract_hash.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),
@@ -115,6 +121,25 @@ pub extern "C" fn swap() {
         Some(contract_hash) => ContractHash::from(contract_hash.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),
     };
+    AMM {
+        amm_access_key: amm_access_key,
+        token_hash: token_hash,
+        token0_hash: token0_hash,
+        token1_hash: token1_hash,
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn swap() {
+    let amm_hashs = collect();
+    let amm_access_key = amm_hashs.amm_access_key;
+    //let token_hash = amm_hashs.token_hash;
+    let token0_hash = amm_hashs.token0_hash;
+    let token1_hash = amm_hashs.token1_hash;
+
+    let owner: Key = get_immediate_caller_address().unwrap_or_revert();
+    let amount: U256 = runtime::get_named_arg("amount");
+    let from_token_hash: ContractHash = runtime::get_named_arg("fromToken");
     let reserve0_uref: URef = match runtime::get_key("reserve0"){
         Some(key) => key,
         None => runtime::revert(ApiError::MissingKey)
@@ -157,14 +182,28 @@ pub extern "C" fn swap() {
             "amount" => amountOut
         },
     );
-    // update reserve
+    // update reserve0 and reserve1
 }
 
 #[no_mangle]
-pub extern "C" fn addLiquidity() {}
+pub extern "C" fn addLiquidity() {
+    let amm_hashs = collect();
+    let amm_access_key = amm_hashs.amm_access_key;
+    let token_hash = amm_hashs.token_hash;
+    let token0_hash = amm_hashs.token0_hash;
+    let token1_hash = amm_hashs.token1_hash;
+
+}
 
 #[no_mangle]
-pub extern "C" fn removeLiquidity() {}
+pub extern "C" fn removeLiquidity() {
+    let amm_hashs = collect();
+    let amm_access_key = amm_hashs.amm_access_key;
+    let token_hash = amm_hashs.token_hash;
+    let token0_hash = amm_hashs.token0_hash;
+    let token1_hash = amm_hashs.token1_hash;
+
+}
 
 #[no_mangle]
 pub extern "C" fn call() {
