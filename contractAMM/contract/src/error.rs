@@ -20,6 +20,7 @@ pub enum Error {
     MissingKey,
     ZeroAmount,
     InvalidToken,
+    RatioMismatch,
     /// User error.
     User(u16),
 }
@@ -29,6 +30,7 @@ const ERROR_OVERFLOW: u16 = u16::MAX - 3;
 const ERROR_MISSING_KEY: u16 = u16::MAX - 4;
 const ERROR_ZERO_AMOUNT_TRANSFERRED: u16 = u16::MAX - 5;
 const ERROR_INVALID_TOKEN_HASH: u16 = u16::MAX - 6;
+const ERROR_RATIO_MISMATCH: u16 = u16::MAX - 7;
 impl From<Error> for ApiError {
     fn from(error: Error) -> Self {
         let user_error = match error {
@@ -37,6 +39,7 @@ impl From<Error> for ApiError {
             Error::MissingKey => ERROR_MISSING_KEY,
             Error::ZeroAmount => ERROR_ZERO_AMOUNT_TRANSFERRED,
             Error::InvalidToken => ERROR_INVALID_TOKEN_HASH,
+            Error:RatioMismatch => ERROR_RATIO_MISMATCH,
             Error::User(user_error) => user_error,
         };
         ApiError::User(user_error)

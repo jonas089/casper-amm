@@ -201,14 +201,30 @@ pub extern "C" fn addLiquidity() {
     let token_hash = amm_hashs.token_hash;
     let token0_hash = amm_hashs.token0_hash;
     let token1_hash = amm_hashs.token1_hash;
-    // transfer amount0 of token0 and amount1 of token1 to this contract
 
-    // rule if a reserve is not empty:
-    /* 
-    if (reserve0 > 0 || reserve1 > 0) {
-        require(reserve0 * _amount1 == reserve1 * _amount0, "x / y != dx / dy");
-    }
-    */
+    let owner: Key = get_immediate_caller_address().unwrap_or_revert();
+    let amount0: U256 = runtime::get_named_arg("amount0");
+    let amount1: U256 = runtime::get_named_arg("amount1");
+
+    let reserve0_uref: URef = match runtime::get_key("reserve0"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve1_uref: URef = match runtime::get_key("reserve1"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve0: U256 = storage::read_or_revert(reserve0_uref);
+    let reserve1: U256 = storage::read_or_revert(reserve1_uref);
+
+    if reserve0 > 0 || reserve1 > 0{
+        if (reserve0 * amount1) != (reserve1 * amount0){
+            runtime::revert(Error::RatioMismatch)
+        };
+    };
+
+    // tbd: make token mintable & read total supply to then:
+    // ...
 
 /*   
     if (totalSupply == 0) {
