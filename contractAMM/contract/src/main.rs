@@ -56,15 +56,7 @@ pub extern "C" fn initialise(){
  `-----'  `-----'--'       `--'   `--' '--'`--'  `--'
 */
 
-#[no_mangle]
-pub extern "C" fn _mint() {
-    let recipient: Key = runtime::get_named_arg("recipient");
-    let amount: U256 = runtime::get_named_arg("amount");
-    let token_hash: ContractHash = match runtime::get_key("token") {
-        Some(key) => ContractHash::from(key.into_hash().unwrap_or_revert()),
-        None => runtime::revert(ApiError::MissingKey),
-    };
-    // mint token at ContractHash
+fn _mint(recipient: Key, amount: U256, token_hash: ContractHash) {
     runtime::call_contract::<()>(
         token_hash,
         "mint",
@@ -75,15 +67,7 @@ pub extern "C" fn _mint() {
     );
 }
 
-#[no_mangle]
-pub extern "C" fn _burn() {
-    let owner: Key = runtime::get_named_arg("owner");
-    let amount: U256 = runtime::get_named_arg("amount");
-    let token_hash: ContractHash = match runtime::get_key("token") {
-        Some(key) => ContractHash::from(key.into_hash().unwrap_or_revert()),
-        None => runtime::revert(ApiError::MissingKey),
-    };
-    // burn token at ContractHash
+fn _burn(owner: Key, amount: U256, token_hash: ContractHash) {
     runtime::call_contract::<()>(
         token_hash,
         "burn",
@@ -192,11 +176,22 @@ pub extern "C" fn swap() {
             "amount" => amountOut
         },
     );
-    // update reserve0 and reserve1
-    // formula:
-    // _update(token0.balanceOf(address(this)), 
-    // token1.balanceOf(address(this)));
-
+    let balance0: U256 = runtime::call_contract::<U256>(
+        token0_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+    let balance1: U256 = runtime::call_contract::<U256>(
+        token1_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+    storage::write(reserve0_uref, balance0);
+    storage::write(reserve1_uref, balance1);
 }
 
 #[no_mangle]
@@ -332,7 +327,7 @@ pub extern "C" fn call() {
     );
     let contract_hash_key = Key::from(contract_hash);
     runtime::put_key("casper_automated_market_maker", contract_hash_key);
-    // for some unknown reason this workaround seems necessary - to be investigated
+    // workaround to read contract package key from within entry point
     let contract_package_in_runtime: ContractPackageHash = match runtime::get_key("casper_automated_market_maker_package"){
         Some(contract_package) => ContractPackageHash::from(contract_package.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),
