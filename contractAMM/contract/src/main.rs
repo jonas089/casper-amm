@@ -23,30 +23,17 @@ mod error;
 use crate::detail::get_immediate_caller_address;
 use error::Error;
 
-// experimental square root function
-fn _sqrt(y: U256) -> U256 {
-    let mut z: U256 = U256::from(0);
-    if y >= U256::from(3) {
-        z = y;
-        let mut x: U256 = y / U256::from(2) + U256::from(1);
-        while x <= z {
-            z = x;
-            x = (y / x + x) / U256::from(2);
-        }
-    } else if y != U256::from(0) {
-        z = U256::from(1);
-    }
-    return z;
-}
-
-// custom min function
-fn _min(x: U256, y: U256) -> U256 {
-    if x < y {
-        x
-    } else {
-        y
-    }
-}
+/* Package Hash as Key workaround
+   _ (`-.    ('-.               .-. .-')    ('-.                   ('-.   
+  ( (OO  )  ( OO ).-.           \  ( OO )  ( OO ).-.             _(  OO)  
+ _.`     \  / . --. /   .-----. ,--. ,--.  / . --. /  ,----.    (,------. 
+(__...--''  | \-.  \   '  .--./ |  .'   /  | \-.  \  '  .-./-')  |  .---' 
+ |  /  | |.-'-'  |  |  |  |('-. |      /,.-'-'  |  | |  |_( O- ) |  |     
+ |  |_.' | \| |_.'  | /_) |OO  )|     ' _)\| |_.'  | |  | .--, \(|  '--.  
+ |  .___.'  |  .-.  | ||  |`-'| |  .   \   |  .-.  |(|  | '. (_/ |  .--'  
+ |  |       |  | |  |(_'  '--'\ |  |\   \  |  | |  | |  '--'  |  |  `---. 
+ `--'       `--' `--'   `-----' `--' '--'  `--' `--'  `------'   `------'
+*/
 
 #[no_mangle]
 pub extern "C" fn initialise(){
@@ -57,6 +44,17 @@ pub extern "C" fn initialise(){
     }.into_uref().unwrap_or_revert();
     storage::write(casper_amm_uref, casper_amm_key);
 }
+
+/* Liquidity Token
+          <-.(`-')      (`-')     <-.(`-') <-. (`-')_ 
+   <-.     __( OO)      ( OO).->   __( OO)    \( OO) )
+ ,--. )   '-'---\_)     /    '._  '-'. ,--.,--./ ,--/ 
+ |  (`-')|  .-.  |      |'--...__)|  .'   /|   \ |  | 
+ |  |OO )|  | | <-'     `--.  .--'|      /)|  . '|  |)
+(|  '__ ||  | |  |         |  |   |  .   ' |  |\    | 
+ |     |''  '-'  '-.       |  |   |  |\   \|  | \   | 
+ `-----'  `-----'--'       `--'   `--' '--'`--'  `--'
+*/
 
 #[no_mangle]
 pub extern "C" fn _mint() {
@@ -95,6 +93,18 @@ pub extern "C" fn _burn() {
         },
     );
 }
+
+/* Market making logic
+   ('-.     _   .-')    _   .-')    
+  ( OO ).-.( '.( OO )_ ( '.( OO )_  
+  / . --. / ,--.   ,--.),--.   ,--.)
+  | \-.  \  |   `.'   | |   `.'   | 
+.-'-'  |  | |         | |         | 
+ \| |_.'  | |  |'.'|  | |  |'.'|  | 
+  |  .-.  | |  |   |  | |  |   |  | 
+  |  | |  | |  |   |  | |  |   |  | 
+  `--' `--' `--'   `--' `--'   `--'
+*/
 
 struct AMM{
     amm_access_key: Key,
@@ -183,6 +193,10 @@ pub extern "C" fn swap() {
         },
     );
     // update reserve0 and reserve1
+    // formula:
+    // _update(token0.balanceOf(address(this)), 
+    // token1.balanceOf(address(this)));
+
 }
 
 #[no_mangle]
@@ -192,6 +206,26 @@ pub extern "C" fn addLiquidity() {
     let token_hash = amm_hashs.token_hash;
     let token0_hash = amm_hashs.token0_hash;
     let token1_hash = amm_hashs.token1_hash;
+    // transfer amount0 of token0 and amount1 of token1 to this contract
+
+    // rule if a reserve is not empty:
+    /* 
+    if (reserve0 > 0 || reserve1 > 0) {
+        require(reserve0 * _amount1 == reserve1 * _amount0, "x / y != dx / dy");
+    }
+    */
+
+/*   
+    if (totalSupply == 0) {
+        shares = _sqrt(_amount0 * _amount1);
+    } else {
+        shares = _min(
+            (_amount0 * totalSupply) / reserve0,
+            (_amount1 * totalSupply) / reserve1
+        );
+    }
+*/
+
 
 }
 
@@ -202,8 +236,58 @@ pub extern "C" fn removeLiquidity() {
     let token_hash = amm_hashs.token_hash;
     let token0_hash = amm_hashs.token0_hash;
     let token1_hash = amm_hashs.token1_hash;
-
+    // to be implemented
 }
+
+/* Math helpers
+ _   .-')      ('-.     .-') _    ('-. .-. 
+( '.( OO )_   ( OO ).-.(  OO) )  ( OO )  / 
+ ,--.   ,--.) / . --. //     '._ ,--. ,--. 
+ |   `.'   |  | \-.  \ |'--...__)|  | |  | 
+ |         |.-'-'  |  |'--.  .--'|   .|  | 
+ |  |'.'|  | \| |_.'  |   |  |   |       | 
+ |  |   |  |  |  .-.  |   |  |   |  .-.  | 
+ |  |   |  |  |  | |  |   |  |   |  | |  | 
+ `--'   `--'  `--' `--'   `--'   `--' `--'
+
+*/
+
+// experimental square root function
+fn _sqrt(y: U256) -> U256 {
+    let mut z: U256 = U256::from(0);
+    if y >= U256::from(3) {
+        z = y;
+        let mut x: U256 = y / U256::from(2) + U256::from(1);
+        while x <= z {
+            z = x;
+            x = (y / x + x) / U256::from(2);
+        }
+    } else if y != U256::from(0) {
+        z = U256::from(1);
+    }
+    return z;
+}
+
+// custom min function
+fn _min(x: U256, y: U256) -> U256 {
+    if x < y {
+        x
+    } else {
+        y
+    }
+}
+
+/* Call function (init ep)
+           (`-')  _                                  <-. (`-')_ 
+ _         (OO ).-/    <-.      <-.          <-.        \( OO) )
+ \-,-----. / ,---.   ,--. )   ,--. )      (`-')-----.,--./ ,--/ 
+  |  .--./ | \ /`.\  |  (`-') |  (`-')    (OO|(_\---'|   \ |  | 
+ /_) (`-') '-'|_.' | |  |OO ) |  |OO )     / |  '--. |  . '|  |)
+ ||  |OO )(|  .-.  |(|  '__ |(|  '__ |     \_)  .--' |  |\    | 
+(_'  '--'\ |  | |  | |     |' |     |'      `|  |_)  |  | \   | 
+   `-----' `--' `--' `-----'  `-----'        `--'    `--'  `--' 
+
+*/
 
 #[no_mangle]
 pub extern "C" fn call() {
