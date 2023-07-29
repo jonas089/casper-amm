@@ -39,7 +39,7 @@ impl From<Error> for ApiError {
             Error::MissingKey => ERROR_MISSING_KEY,
             Error::ZeroAmount => ERROR_ZERO_AMOUNT_TRANSFERRED,
             Error::InvalidToken => ERROR_INVALID_TOKEN_HASH,
-            Error:RatioMismatch => ERROR_RATIO_MISMATCH,
+            Error::RatioMismatch => ERROR_RATIO_MISMATCH,
             Error::User(user_error) => user_error,
         };
         ApiError::User(user_error)

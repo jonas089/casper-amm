@@ -92,6 +92,7 @@ impl TestContext {
             "name" => "TOKEN_C".to_string(),
             "symbol" => "CTKN".to_string(),
             "decimals" => 18_u8,
+            "enable_mint_burn" => 1u8,
             "total_supply" => U256::from(1_000_000_000_000_000_000_000_000_u128),
         };
         let a_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest =

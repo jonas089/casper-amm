@@ -78,6 +78,25 @@ fn _burn(owner: Key, amount: U256, token_hash: ContractHash) {
     );
 }
 
+fn _update(amm_access_key: Key, reserve0_uref: URef, reserve1_uref: URef, token0_hash: ContractHash, token1_hash: ContractHash){
+    let balance0: U256 = runtime::call_contract::<U256>(
+        token0_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+    let balance1: U256 = runtime::call_contract::<U256>(
+        token1_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+    storage::write(reserve0_uref, balance0);
+    storage::write(reserve1_uref, balance1);   
+}
+
 /* Market making logic
    ('-.     _   .-')    _   .-')    
   ( OO ).-.( '.( OO )_ ( '.( OO )_  
@@ -176,22 +195,7 @@ pub extern "C" fn swap() {
             "amount" => amountOut
         },
     );
-    let balance0: U256 = runtime::call_contract::<U256>(
-        token0_hash,
-        "balance_of",
-        runtime_args! {
-            "address" => amm_access_key,
-        }
-    );
-    let balance1: U256 = runtime::call_contract::<U256>(
-        token1_hash,
-        "balance_of",
-        runtime_args! {
-            "address" => amm_access_key,
-        }
-    );
-    storage::write(reserve0_uref, balance0);
-    storage::write(reserve1_uref, balance1);
+    _update(amm_access_key, reserve0_uref, reserve1_uref, token0_hash, token1_hash);
 }
 
 #[no_mangle]
@@ -206,6 +210,27 @@ pub extern "C" fn addLiquidity() {
     let amount0: U256 = runtime::get_named_arg("amount0");
     let amount1: U256 = runtime::get_named_arg("amount1");
 
+    // transfer funds from caller to contract
+    runtime::call_contract::<()>(
+        token0_hash,
+        "transfer_from",
+        runtime_args! {
+            "recipient" => amm_access_key,
+            "owner" => owner,
+            "amount" => amount0
+        },
+    );
+    runtime::call_contract::<()>(
+        token1_hash,
+        "transfer_from",
+        runtime_args! {
+            "recipient" => amm_access_key,
+            "owner" => owner,
+            "amount" => amount1
+        },
+    );
+
+    // load reserves
     let reserve0_uref: URef = match runtime::get_key("reserve0"){
         Some(key) => key,
         None => runtime::revert(ApiError::MissingKey)
@@ -217,27 +242,39 @@ pub extern "C" fn addLiquidity() {
     let reserve0: U256 = storage::read_or_revert(reserve0_uref);
     let reserve1: U256 = storage::read_or_revert(reserve1_uref);
 
-    if reserve0 > 0 || reserve1 > 0{
+    // verify contribution
+    if reserve0 > U256::zero() || reserve1 > U256::zero(){
         if (reserve0 * amount1) != (reserve1 * amount0){
             runtime::revert(Error::RatioMismatch)
         };
     };
 
-    // tbd: make token mintable & read total supply to then:
-    // ...
-
-/*   
-    if (totalSupply == 0) {
-        shares = _sqrt(_amount0 * _amount1);
+    // current total supply of the liquidity token
+    let totalSupply: U256 = runtime::call_contract::<U256>(
+        token_hash,
+        "total_supply",
+        runtime_args! {}
+    );
+    
+    let mut shares: U256 = U256::zero();
+    // calculate shares in lp token
+    if totalSupply == U256::zero(){
+        shares = _sqrt(amount0 * amount1);
     } else {
         shares = _min(
-            (_amount0 * totalSupply) / reserve0,
-            (_amount1 * totalSupply) / reserve1
+            (amount0 * totalSupply) / reserve0,
+            (amount1 * totalSupply) / reserve1
         );
     }
-*/
+    // mint lp token to caller and update reserves
+    _mint(owner, shares, token_hash);
+    _update(amm_access_key, reserve0_uref, reserve1_uref, token0_hash, token1_hash);
 
-
+    /* 
+    require(shares > 0, "shares = 0");
+    _mint(msg.sender, shares);
+    _update(token0.balanceOf(address(this)), token1.balanceOf(address(this)));
+    */
 }
 
 #[no_mangle]
