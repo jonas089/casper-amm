@@ -277,7 +277,7 @@ impl TestContext {
         let remove_request = ExecuteRequestBuilder::contract_call_by_hash(
             msg_sender,
             contract_hash,
-            "add_liquidity",
+            "remove_liquidity",
             session_args
         ).build();
 

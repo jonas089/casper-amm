@@ -353,8 +353,20 @@ pub extern "C" fn remove_liquidity() {
     );
     let amount0: U256 = shares * balance0 / totalSupply;
     let amount1: U256 = shares * balance1 / totalSupply;
+    /*
+        first need to transfer approved amount of shares to contract, those shares are then burned.
+    */
+    runtime::call_contract::<()>(
+        token_hash,
+        "transfer_from",
+        runtime_args! {
+            "recipient" => amm_access_key,
+            "owner" => owner,
+            "amount" => shares.clone()
+        },
+    );
     // burn and update reserves
-    _burn(owner, shares, token_hash);
+    _burn(amm_access_key, shares, token_hash);
     _update(amm_access_key, reserve0_uref, reserve1_uref, token0_hash, token1_hash);
     // cashout token0
     runtime::call_contract::<()>(

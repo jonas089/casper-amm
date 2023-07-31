@@ -36,6 +36,24 @@ mod tests {
         assert_eq!(balance_package_token0, U256::from(5000));
         let ali_shares = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN2");
         assert_eq!(ali_shares, U256::from(5000));
+        fixture.approve(fixture.ali, package_key, U256::from(5000), token);
+        fixture.remove_liquidity(fixture.ali, U256::from(5000));
+
+        let package_shares = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN2");
+        let package_token0 = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN0");
+        let package_token1 = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN1");
+        
+        assert_eq!(package_shares, U256::zero());
+        assert_eq!(package_token0, U256::zero());
+        assert_eq!(package_token1, U256::zero());
+        
+        let ali_shares = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN2");
+        let ali_token0 = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN0");
+        let ali_token1 = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN1");
+        
+        assert_eq!(ali_shares, U256::zero());
+        assert_eq!(ali_token0, U256::from(5000));
+        assert_eq!(ali_token1, U256::from(5000));
     }
 }
 

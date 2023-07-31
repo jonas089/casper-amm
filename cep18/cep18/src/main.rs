@@ -235,9 +235,7 @@ pub extern "C" fn burn() {
     if 0 == read_from::<u8>(ENABLE_MINT_BURN) {
         revert(Cep18Error::MintBurnDisabled);
     }
-
     let owner: Key = runtime::get_named_arg(OWNER);
-
     if owner != get_immediate_caller_address().unwrap_or_revert() {
         revert(Cep18Error::InvalidBurnTarget);
     }
