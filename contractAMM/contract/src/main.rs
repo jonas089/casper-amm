@@ -297,7 +297,7 @@ pub extern "C" fn add_liquidity() {
     // calculate shares
     let mut shares: U256 = U256::zero();
     if totalSupply == U256::zero(){
-        shares = _sqrt(U256::from(4));
+        shares = _sqrt(amount0 * amount1);
     } else {
         let a: U256 = amount0 * totalSupply / reserve0;
         let b: U256 = amount1 * totalSupply / reserve1;

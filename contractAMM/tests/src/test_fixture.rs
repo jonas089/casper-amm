@@ -268,6 +268,25 @@ impl TestContext {
             .commit();
     }
 
+    pub fn remove_liquidity(&mut self, msg_sender: AccountHash, shares: U256){
+        let contract_hash = self.contract_hash("casper_automated_market_maker");
+        let session_args = runtime_args!{
+            "shares" => shares
+        };
+
+        let remove_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            contract_hash,
+            "add_liquidity",
+            session_args
+        ).build();
+
+        self.builder
+            .exec(remove_request)
+            .expect_success()
+            .commit();        
+    }
+
     pub fn update_admins(&mut self, msg_sender: AccountHash, admins: Vec<Key>, contract_hash: ContractHash){
         let session_args = runtime_args!{
             "admin_list" => admins,

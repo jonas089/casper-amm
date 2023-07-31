@@ -34,6 +34,8 @@ mod tests {
         let balance_package_token1 = fixture.balance_of(package_key, "cep18_contract_hash_TOKEN1");
         assert_eq!(balance_package_token0, balance_package_token1);
         assert_eq!(balance_package_token0, U256::from(5000));
+        let ali_shares = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN2");
+        assert_eq!(ali_shares, U256::from(5000));
     }
 }
 
