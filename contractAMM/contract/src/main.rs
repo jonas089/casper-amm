@@ -38,11 +38,7 @@ use error::Error;
 #[no_mangle]
 pub extern "C" fn initialise(){
     let casper_amm_key: Key = runtime::get_named_arg("casper_amm_key");
-    let casper_amm_uref: URef = match runtime::get_key("casper_amm_key"){
-        Some(key) => key,
-        None => runtime::revert(ApiError::MissingKey)
-    }.into_uref().unwrap_or_revert();
-    storage::write(casper_amm_uref, casper_amm_key);
+    runtime::put_key("casper_amm_key", casper_amm_key);
 }
 
 /* Math helpers
@@ -158,11 +154,10 @@ struct AMM{
 }
 
 fn collect() -> AMM{
-    let amm_access_uref: URef = match runtime::get_key("casper_amm_key"){
+    let amm_access_key: Key = match runtime::get_key("casper_amm_key"){
         Some(key) => key,
         None => runtime::revert(ApiError::MissingKey)
-    }.into_uref().unwrap_or_revert();
-    let amm_access_key: Key = storage::read_or_revert(amm_access_uref);
+    };
     let token_hash: ContractHash = match runtime::get_key("token") {
         Some(contract_hash) => ContractHash::from(contract_hash.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),
@@ -372,8 +367,8 @@ pub extern "C" fn call() {
 
     named_keys.insert("reserve0".to_string(), reserve);
     named_keys.insert("reserve1".to_string(), reserve);
-    let casper_amm_uref: URef = storage::new_uref("");
-    named_keys.insert("casper_amm_key".to_string(), casper_amm_uref.into());
+    //let casper_amm_uref: URef = storage::new_uref("");
+    //named_keys.insert("casper_amm_key".to_string(), casper_amm_uref.into());
 
     let package_key_name = "casper_automated_market_maker_package".to_string();
     let (contract_hash, _) = storage::new_contract(
