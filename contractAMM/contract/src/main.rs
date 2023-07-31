@@ -307,13 +307,75 @@ pub extern "C" fn add_liquidity() {
 }
 
 #[no_mangle]
-pub extern "C" fn removeLiquidity() {
+pub extern "C" fn remove_liquidity() {
     let amm_hashs = collect();
     let amm_access_key = amm_hashs.amm_access_key;
     let token_hash = amm_hashs.token_hash;
     let token0_hash = amm_hashs.token0_hash;
     let token1_hash = amm_hashs.token1_hash;
-    // to be implemented
+
+    let owner: Key = get_immediate_caller_address().unwrap_or_revert();
+    let shares: U256 = runtime::get_named_arg("shares");
+
+    // load reserves
+    let reserve0_uref: URef = match runtime::get_key("reserve0"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve1_uref: URef = match runtime::get_key("reserve1"){
+        Some(key) => key,
+        None => runtime::revert(ApiError::MissingKey)
+    }.into_uref().unwrap_or_revert();
+    let reserve0: U256 = storage::read_or_revert(reserve0_uref);
+    let reserve1: U256 = storage::read_or_revert(reserve1_uref);
+
+    // current total supply of the liquidity token
+    let totalSupply: U256 = runtime::call_contract::<U256>(
+        token_hash,
+        "total_supply",
+        runtime_args! {}
+    );
+
+    // get contract token balances
+    let balance0: U256 = runtime::call_contract::<U256>(
+        token0_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+    let balance1: U256 = runtime::call_contract::<U256>(
+        token1_hash,
+        "balance_of",
+        runtime_args! {
+            "address" => amm_access_key,
+        }
+    );
+
+    let amount0: U256 = shares * balance0 / totalSupply;
+    let amount1: U256 = shares * balance1 / totalSupply;
+
+    runtime::call_contract::<()>(
+        token0_hash,
+        "transfer",
+        runtime_args! {
+            "recipient" => owner,
+            "amount" => amount0.clone()
+        },
+    );
+
+    runtime::call_contract::<()>(
+        token1_hash,
+        "transfer",
+        runtime_args! {
+            "recipient" => owner,
+            "amount" => amount1.clone()
+        },
+    );
+
+    // update reserves
+    _burn(owner, shares, token_hash);
+    _update(amm_access_key, reserve0_uref, reserve1_uref, token0_hash, token1_hash);
 }
 
 /* Call function (init ep)
@@ -352,9 +414,18 @@ pub extern "C" fn call() {
         EntryPointAccess::Public,
         EntryPointType::Contract
     );
+    let remove_liquidity: EntryPoint = EntryPoint::new(
+        "remove_liquidity",
+        vec![],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract
+    );
     entry_points.add_entry_point(swap);
     entry_points.add_entry_point(initialise);
     entry_points.add_entry_point(add_liquidity);
+    entry_points.add_entry_point(remove_liquidity);
+
     let token_hash: Key = runtime::get_named_arg("token");
     let token_hash0: Key = runtime::get_named_arg("token0");
     let token_hash1: Key = runtime::get_named_arg("token1");
