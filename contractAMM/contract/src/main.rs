@@ -240,7 +240,7 @@ pub extern "C" fn swap() {
 }
 
 #[no_mangle]
-pub extern "C" fn addLiquidity() {
+pub extern "C" fn add_liquidity() {
     let amm_hashs = collect();
     let amm_access_key = amm_hashs.amm_access_key;
     let token_hash = amm_hashs.token_hash;
@@ -350,8 +350,8 @@ pub extern "C" fn call() {
         EntryPointAccess::Public,
         EntryPointType::Contract
     );
-    let addLiquidity: EntryPoint = EntryPoint::new(
-        "addLiquidity",
+    let add_liquidity: EntryPoint = EntryPoint::new(
+        "add_liquidity",
         vec![],
         CLType::Unit,
         EntryPointAccess::Public,
@@ -359,14 +359,14 @@ pub extern "C" fn call() {
     );
     entry_points.add_entry_point(swap);
     entry_points.add_entry_point(initialise);
-    entry_points.add_entry_point(addLiquidity);
-    //let token_hash: Key = runtime::get_named_arg("token");
+    entry_points.add_entry_point(add_liquidity);
+    let token_hash: Key = runtime::get_named_arg("token");
     let token_hash0: Key = runtime::get_named_arg("token0");
     let token_hash1: Key = runtime::get_named_arg("token1");
     let reserve: Key = storage::new_uref(U256::from(0u128)).into();
 
     let mut named_keys = NamedKeys::new();
-    //named_keys.insert("token".to_string(), token_hash);
+    named_keys.insert("token".to_string(), token_hash);
     named_keys.insert("token0".to_string(), token_hash0);
     named_keys.insert("token1".to_string(), token_hash1);
 

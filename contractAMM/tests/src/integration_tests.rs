@@ -36,7 +36,7 @@ mod tests {
             balance_contract1,
             U256::from(501)
         );
-        let balance_ali = fixture.balance_of(Key::from(fixture.ali), "cep18_contract_hash_TOKEN0");
+        let balance_ali = fixture.balance_of(Key::from(fixture.ali), fixture.contract_hash("casper_automated_market_maker_package")"cep18_contract_hash_TOKEN0");
         assert_eq!(
             balance_ali,
             U256::from(4000)
@@ -48,6 +48,10 @@ mod tests {
         let mut fixture: TestContext = TestContext::new();
         fixture.install();
         let package_key = Key::from(fixture.contract_hash("casper_automated_market_maker_package"));
+        // update admin for LP token
+        let token = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN2");
+        fixture.update_admins(*DEFAULT_ACCOUNT_ADDR, vec![package_key], token);
+
         let token0 = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN0");
         let token1 = fixture.contract_hash_from_named_keys("cep18_contract_hash_TOKEN1");
         

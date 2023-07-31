@@ -93,7 +93,6 @@ impl TestContext {
             "symbol" => "TKN2".to_string(),
             "decimals" => 18_u8,
             "enable_mint_burn" => 1u8,
-            "admin_list" => vec![Key::from(self.contract_hash("casper_automated_market_maker_package"))],
             "total_supply" => U256::from(0_u128),
         };
         let a_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest =
@@ -259,12 +258,29 @@ impl TestContext {
         let add_request = ExecuteRequestBuilder::contract_call_by_hash(
             msg_sender,
             contract_hash,
-            "addLiquidity",
+            "add_liquidity",
             session_args
         ).build();
 
         self.builder
             .exec(add_request)
+            .expect_success()
+            .commit();
+    }
+
+    pub fn update_admins(&mut self, msg_sender: AccountHash, admins: Vec<Key>, contract_hash: ContractHash){
+        let session_args = runtime_args!{
+            "admin_list" => admins,
+        };
+        let sec_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            contract_hash,
+            "change_security",
+            session_args
+        ).build();
+
+        self.builder
+            .exec(sec_request)
             .expect_success()
             .commit();
     }
