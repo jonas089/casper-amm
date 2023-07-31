@@ -74,26 +74,27 @@ impl TestContext {
     pub fn install(&mut self) {
         let session_args_a = runtime_args! {
             // initialise cep18
-            "name" => "TOKEN_A".to_string(),
-            "symbol" => "ATKN".to_string(),
+            "name" => "TOKEN0".to_string(),
+            "symbol" => "TKN0".to_string(),
             "decimals" => 18_u8,
             // 1000_000 Tokens (1 * 10 ** 24 WEI)
             "total_supply" => U256::from(1_000_000_000_000_000_000_000_000_u128),
         };
         let session_args_b = runtime_args! {
             // initialise cep18
-            "name" => "TOKEN_B".to_string(),
-            "symbol" => "BTKN".to_string(),
+            "name" => "TOKEN1".to_string(),
+            "symbol" => "TKN1".to_string(),
             "decimals" => 18_u8,
             "total_supply" => U256::from(1_000_000_000_000_000_000_000_000_u128),
         };
         let session_args_c = runtime_args! {
             // initialise cep18
-            "name" => "TOKEN_C".to_string(),
-            "symbol" => "CTKN".to_string(),
+            "name" => "TOKEN2".to_string(),
+            "symbol" => "TKN2".to_string(),
             "decimals" => 18_u8,
             "enable_mint_burn" => 1u8,
-            "total_supply" => U256::from(1_000_000_000_000_000_000_000_000_u128),
+            "admin_list" => vec![Key::from(self.contract_hash("casper_automated_market_maker_package"))],
+            "total_supply" => U256::from(0_u128),
         };
         let a_exec_request: casper_execution_engine::core::engine_state::ExecuteRequest =
             ExecuteRequestBuilder::standard(
@@ -120,9 +121,9 @@ impl TestContext {
         self.builder.exec(b_exec_request).expect_success().commit();
         self.builder.exec(c_exec_request).expect_success().commit();
 
-        let a_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_A");
-        let b_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_B");
-        let c_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN_C");
+        let a_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN0");
+        let b_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN1");
+        let c_contract_hash = self.contract_hash_from_named_keys("cep18_contract_hash_TOKEN2");
 
         let session_args = runtime_args! {
             "token0" => Key::from(a_contract_hash),
@@ -248,6 +249,25 @@ impl TestContext {
             .commit();
     }
     
+    pub fn add_liquidity(&mut self, msg_sender: AccountHash, amount0: U256, amount1: U256){
+        let contract_hash = self.contract_hash("casper_automated_market_maker");
+        let session_args = runtime_args!{
+            "amount0" => amount0,
+            "amount1" => amount1
+        };
+
+        let add_request = ExecuteRequestBuilder::contract_call_by_hash(
+            msg_sender,
+            contract_hash,
+            "addLiquidity",
+            session_args
+        ).build();
+
+        self.builder
+            .exec(add_request)
+            .expect_success()
+            .commit();
+    }
 
     pub fn balance_of(&self, account: Key, contract_name: &str) -> U256 {
         let seed_uref: URef = *self

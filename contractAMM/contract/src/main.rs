@@ -45,6 +45,46 @@ pub extern "C" fn initialise(){
     storage::write(casper_amm_uref, casper_amm_key);
 }
 
+/* Math helpers
+ _   .-')      ('-.     .-') _    ('-. .-. 
+( '.( OO )_   ( OO ).-.(  OO) )  ( OO )  / 
+ ,--.   ,--.) / . --. //     '._ ,--. ,--. 
+ |   `.'   |  | \-.  \ |'--...__)|  | |  | 
+ |         |.-'-'  |  |'--.  .--'|   .|  | 
+ |  |'.'|  | \| |_.'  |   |  |   |       | 
+ |  |   |  |  |  .-.  |   |  |   |  .-.  | 
+ |  |   |  |  |  | |  |   |  |   |  | |  | 
+ `--'   `--'  `--' `--'   `--'   `--' `--'
+
+*/
+
+// experimental square root function
+fn _sqrt(y: U256) -> U256 {
+    if y == U256::from(0) {
+        return U256::from(0);
+    }
+
+    let mut z: U256 = (y >> 1) + U256::from(1); // Initialize z to y / 2 + 1
+    let mut x: U256 = y; // Initialize x to y
+
+    while x > z {
+        x = z; // Use binary search to update x
+        z = (y / x + x) >> 1; // Equivalent to (y / x + x) / 2, but more efficient
+    }
+
+    return z;
+}
+
+// custom min function
+fn _min(x: U256, y: U256) -> U256 {
+    if x < y {
+        return x;
+    } else {
+        return y;
+    }
+}
+
+
 /* Liquidity Token
           <-.(`-')      (`-')     <-.(`-') <-. (`-')_ 
    <-.     __( OO)      ( OO).->   __( OO)    \( OO) )
@@ -78,6 +118,7 @@ fn _burn(owner: Key, amount: U256, token_hash: ContractHash) {
     );
 }
 
+#[no_mangle]
 fn _update(amm_access_key: Key, reserve0_uref: URef, reserve1_uref: URef, token0_hash: ContractHash, token1_hash: ContractHash){
     let balance0: U256 = runtime::call_contract::<U256>(
         token0_hash,
@@ -209,7 +250,6 @@ pub extern "C" fn addLiquidity() {
     let owner: Key = get_immediate_caller_address().unwrap_or_revert();
     let amount0: U256 = runtime::get_named_arg("amount0");
     let amount1: U256 = runtime::get_named_arg("amount1");
-
     // transfer funds from caller to contract
     runtime::call_contract::<()>(
         token0_hash,
@@ -217,7 +257,7 @@ pub extern "C" fn addLiquidity() {
         runtime_args! {
             "recipient" => amm_access_key,
             "owner" => owner,
-            "amount" => amount0
+            "amount" => amount0.clone()
         },
     );
     runtime::call_contract::<()>(
@@ -226,10 +266,10 @@ pub extern "C" fn addLiquidity() {
         runtime_args! {
             "recipient" => amm_access_key,
             "owner" => owner,
-            "amount" => amount1
+            "amount" => amount1.clone()
         },
     );
-
+    
     // load reserves
     let reserve0_uref: URef = match runtime::get_key("reserve0"){
         Some(key) => key,
@@ -248,7 +288,7 @@ pub extern "C" fn addLiquidity() {
             runtime::revert(Error::RatioMismatch)
         };
     };
-
+    
     // current total supply of the liquidity token
     let totalSupply: U256 = runtime::call_contract::<U256>(
         token_hash,
@@ -257,24 +297,18 @@ pub extern "C" fn addLiquidity() {
     );
     
     let mut shares: U256 = U256::zero();
-    // calculate shares in lp token
     if totalSupply == U256::zero(){
-        shares = _sqrt(amount0 * amount1);
+        shares = _sqrt(U256::from(4));
     } else {
-        shares = _min(
-            (amount0 * totalSupply) / reserve0,
-            (amount1 * totalSupply) / reserve1
-        );
+        let a: U256 = amount0 * totalSupply / reserve0;
+        let b: U256 = amount1 * totalSupply / reserve1;
+        shares = _min(a, b);
     }
+    
+
     // mint lp token to caller and update reserves
     _mint(owner, shares, token_hash);
     _update(amm_access_key, reserve0_uref, reserve1_uref, token0_hash, token1_hash);
-
-    /* 
-    require(shares > 0, "shares = 0");
-    _mint(msg.sender, shares);
-    _update(token0.balanceOf(address(this)), token1.balanceOf(address(this)));
-    */
 }
 
 #[no_mangle]
@@ -285,44 +319,6 @@ pub extern "C" fn removeLiquidity() {
     let token0_hash = amm_hashs.token0_hash;
     let token1_hash = amm_hashs.token1_hash;
     // to be implemented
-}
-
-/* Math helpers
- _   .-')      ('-.     .-') _    ('-. .-. 
-( '.( OO )_   ( OO ).-.(  OO) )  ( OO )  / 
- ,--.   ,--.) / . --. //     '._ ,--. ,--. 
- |   `.'   |  | \-.  \ |'--...__)|  | |  | 
- |         |.-'-'  |  |'--.  .--'|   .|  | 
- |  |'.'|  | \| |_.'  |   |  |   |       | 
- |  |   |  |  |  .-.  |   |  |   |  .-.  | 
- |  |   |  |  |  | |  |   |  |   |  | |  | 
- `--'   `--'  `--' `--'   `--'   `--' `--'
-
-*/
-
-// experimental square root function
-fn _sqrt(y: U256) -> U256 {
-    let mut z: U256 = U256::from(0);
-    if y >= U256::from(3) {
-        z = y;
-        let mut x: U256 = y / U256::from(2) + U256::from(1);
-        while x <= z {
-            z = x;
-            x = (y / x + x) / U256::from(2);
-        }
-    } else if y != U256::from(0) {
-        z = U256::from(1);
-    }
-    return z;
-}
-
-// custom min function
-fn _min(x: U256, y: U256) -> U256 {
-    if x < y {
-        x
-    } else {
-        y
-    }
 }
 
 /* Call function (init ep)
@@ -354,15 +350,23 @@ pub extern "C" fn call() {
         EntryPointAccess::Public,
         EntryPointType::Contract
     );
+    let addLiquidity: EntryPoint = EntryPoint::new(
+        "addLiquidity",
+        vec![],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract
+    );
     entry_points.add_entry_point(swap);
     entry_points.add_entry_point(initialise);
-    let token_hash: Key = runtime::get_named_arg("token");
+    entry_points.add_entry_point(addLiquidity);
+    //let token_hash: Key = runtime::get_named_arg("token");
     let token_hash0: Key = runtime::get_named_arg("token0");
     let token_hash1: Key = runtime::get_named_arg("token1");
-    let reserve: Key = storage::new_uref(U256::from(1000u128)).into();
+    let reserve: Key = storage::new_uref(U256::from(0u128)).into();
 
     let mut named_keys = NamedKeys::new();
-    named_keys.insert("token".to_string(), token_hash);
+    //named_keys.insert("token".to_string(), token_hash);
     named_keys.insert("token0".to_string(), token_hash0);
     named_keys.insert("token1".to_string(), token_hash1);
 
@@ -380,7 +384,7 @@ pub extern "C" fn call() {
     );
     let contract_hash_key = Key::from(contract_hash);
     runtime::put_key("casper_automated_market_maker", contract_hash_key);
-    // workaround to read contract package key from within entry point
+    // necessary workaround to read contract package key from within entry point
     let contract_package_in_runtime: ContractPackageHash = match runtime::get_key("casper_automated_market_maker_package"){
         Some(contract_package) => ContractPackageHash::from(contract_package.into_hash().unwrap_or_revert()),
         None => runtime::revert(ApiError::MissingKey),

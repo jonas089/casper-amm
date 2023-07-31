@@ -25,12 +25,12 @@ pub enum Error {
     User(u16),
 }
 
-const ERROR_INVALID_CONTEXT: u16 = u16::MAX;
-const ERROR_OVERFLOW: u16 = u16::MAX - 3;
-const ERROR_MISSING_KEY: u16 = u16::MAX - 4;
-const ERROR_ZERO_AMOUNT_TRANSFERRED: u16 = u16::MAX - 5;
-const ERROR_INVALID_TOKEN_HASH: u16 = u16::MAX - 6;
-const ERROR_RATIO_MISMATCH: u16 = u16::MAX - 7;
+const ERROR_INVALID_CONTEXT: u16 = 1u16;
+const ERROR_OVERFLOW: u16 = 2u16;
+const ERROR_MISSING_KEY: u16 = 3u16;
+const ERROR_ZERO_AMOUNT_TRANSFERRED: u16 = 4u16;
+const ERROR_INVALID_TOKEN_HASH: u16 = 5u16;
+const ERROR_RATIO_MISMATCH: u16 = 6u16;
 impl From<Error> for ApiError {
     fn from(error: Error) -> Self {
         let user_error = match error {
