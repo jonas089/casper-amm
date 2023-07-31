@@ -403,19 +403,19 @@ pub extern "C" fn remove_liquidity() {
 #[no_mangle]
 pub extern "C" fn call() {
     let mut entry_points: EntryPoints = EntryPoints::new();
-    let swap: EntryPoint = EntryPoint::new(
-        "swap",
-        vec![],
-        CLType::Unit,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    );
     let initialise: EntryPoint  = EntryPoint::new(
         "initialise",
         vec![],
         CLType::Unit,
         EntryPointAccess::Public,
         EntryPointType::Contract
+    );
+    let swap: EntryPoint = EntryPoint::new(
+        "swap",
+        vec![],
+        CLType::Unit,
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
     );
     let add_liquidity: EntryPoint = EntryPoint::new(
         "add_liquidity",

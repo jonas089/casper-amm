@@ -60,7 +60,6 @@ contract CPAMM {
         // 0.3% fee
         uint amountInWithFee = (_amountIn * 997) / 1000;
         amountOut = (reserveOut * amountInWithFee) / (reserveIn + amountInWithFee);
-
         tokenOut.transfer(msg.sender, amountOut);
 
         _update(token0.balanceOf(address(this)), token1.balanceOf(address(this)));
