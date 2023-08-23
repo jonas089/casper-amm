@@ -21,3 +21,7 @@ export async function install_contract_speculative(args: any, runtime_args: any)
     let resp = await client.speculativeDeploy(deploy);
     await console.log("Install result: ", resp);    
 }
+
+export async function install_contract(args: any, runtime_args: any){
+    
+}

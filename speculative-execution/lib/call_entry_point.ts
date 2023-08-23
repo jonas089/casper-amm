@@ -18,3 +18,7 @@ export async function call_contract(args: any, runtime_args: any){
     });
     return result;
 }
+
+export async function call_contract_speculative(args: any, runtime_args: any){
+
+}
