@@ -39,7 +39,7 @@ async function call_install(){
             await install_contract_speculative(args, runtime_args);
         }
     }
-    else if(args.packageHash == 'odraERC' && args.pathToWasm == './bin/odra-erc.wasm'){
+    else if(args.packageHash.startsWith('odraERC') && args.pathToWasm == './bin/odra-erc.wasm'){
         let runtime_args = RuntimeArgs.fromMap({
             name: CLValueBuilder.string(args.odraErcName),
             symbol: CLValueBuilder.string(args.odraErcSymbol),
