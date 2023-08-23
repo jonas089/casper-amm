@@ -1,4 +1,4 @@
-const { Keys, CLPublicKey } = require("casper-js-sdk");
+const { Keys, CLPublicKey, CLKey, CLByteArray, } = require("casper-js-sdk");
 const fs = require("fs");
 
 export class KeyManager{
@@ -29,6 +29,12 @@ export class KeyManager{
   }
   publicKeyHex(){
     return CLPublicKey.fromEd25519(Keys.Ed25519.parsePublicKeyFile(this.path + 'public.pem')).toHex();
+  }
+  cl_key_constructor(hash_value: string){
+    const uint8Array = Uint8Array.from(Buffer.from(hash_value, 'hex'));
+    const byteArray = new CLByteArray(uint8Array);
+    const key = new CLKey(byteArray);
+    return key;
   }
 }
 

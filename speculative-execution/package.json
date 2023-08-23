@@ -12,6 +12,7 @@
     "@types/node": "^20.4.8"
   },
   "dependencies": {
-    "casper-js-sdk": "^2.15.2"
+    "casper-js-sdk": "^2.15.2",
+    "commander": "^11.0.0"
   }
 }

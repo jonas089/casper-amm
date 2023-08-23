@@ -55,6 +55,20 @@ pub extern "C" fn initialise(){
 
 */
 
+// no right shift operator sqrt
+pub fn _sqrt_nrs(y: Balance) -> Balance {
+    if y == Balance::from(0) {
+        return Balance::from(0);
+    }
+    let mut z: Balance = y / Balance::from(2) + Balance::from(1);
+    let mut x: Balance = y;
+    while x > z {
+        x = z;
+        z = (y / x + x) / Balance::from(2);
+    }
+    return z;
+}
+
 // experimental square root function
 fn _sqrt(y: U256) -> U256 {
     if y == U256::from(0) {
