@@ -29,12 +29,18 @@ async function call_install(){
         });
         await install_contract_speculative(args, runtime_args);
     }
+    else if(args.packageHash == 'odraERC' && args.pathToWasm == './bin/odra-erc.wasm'){
+        let runtime_args = RuntimeArgs.fromMap({
+            name: CLValueBuilder.string(args.odraErcName),
+            symbol: CLValueBuilder.string(args.odraErcSymbol),
+            decimals: CLValueBuilder.u8(args.odraDecimals),
+            initial_supply: CLValueBuilder.u512(args.odraInitialSupply),
+            odra_cfg_package_hash_key_name: CLValueBuilder.string(args.packageHash),
+            odra_cfg_allow_key_override: CLValueBuilder.bool(args.allowOverride),
+            odra_cfg_is_upgradable: CLValueBuilder.bool(args.allowUpgrade),
+            odra_cfg_constructor: CLValueBuilder.string("init")
+        });
+        await install_contract_speculative(args, runtime_args);
+    }
 }
 call_install();
-/*
-
-odra_cfg_package_hash_key_name: odra_cfg_package_hash_key_name,
-odra_cfg_allow_key_override: odra_cfg_allow_key_override,
-odra_cfg_is_upgradable: odra_cfg_is_upgradable,
-odra_cfg_constructor: CLValueBuilder.string("init")
-*/

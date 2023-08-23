@@ -19,5 +19,5 @@ export async function install_contract_speculative(args: any, runtime_args: any)
         [keypair]
     );
     let resp = await client.speculativeDeploy(deploy);
-    await console.log("Odra install result: ", resp);    
+    await console.log("Install result: ", resp);    
 }
