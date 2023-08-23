@@ -37,7 +37,9 @@ export default function default_args() {
         .option('-odra-erc-symbol --odra-erc-symbol <string>', 'Symbol of the odra erc20 token to be installed', 'odratkn')
         .option('-odra-decimals --odra-decimals <number>', 'Decimals of the token', 18)
         .option('-odra-init-supply --odra-initial-supply <number>', 'Initial supply of odra token U512', 0)
-
+        
+        // speculative bool
+        .option('-is-speculative --is-speculative-execution <bool>', 'Set whether to execute or speculative execute', true)
         .parse(process.argv);
     var args = program.opts();
     console.log("Arguments: ", args);

@@ -1,7 +1,7 @@
 import { CLValue, CLValueBuilder, RuntimeArgs } from "casper-js-sdk";
 import { cl_key_constructor } from "./lib/types";
 import default_args from "./lib/global_args";
-import { install_contract_speculative } from "./lib/install_contract";
+import { install_contract_speculative, install_contract } from "./lib/install_contract";
 const fs = require("fs");
 const program = require('commander');
 
@@ -19,7 +19,12 @@ async function call_install(){
             odra_cfg_is_upgradable: CLValueBuilder.bool(args.allowUpgrade),
             odra_cfg_constructor: CLValueBuilder.string("init")
         });
-        await install_contract_speculative(args, runtime_args);
+        if (args.isSpeculativeExecution == false){
+            await install_contract(args, runtime_args);
+        }
+        else{
+            await install_contract_speculative(args, runtime_args);
+        }
     }
     else if (args.packageHash == 'ammContract' && args.pathToWasm == './bin/casperAMM.wasm'){
         let runtime_args = RuntimeArgs.fromMap({
@@ -27,7 +32,12 @@ async function call_install(){
             token0: cl_key_constructor(args.token0Address),
             token1: cl_key_constructor(args.token1Address)
         });
-        await install_contract_speculative(args, runtime_args);
+        if (args.isSpeculativeExecution == false){
+            await install_contract(args, runtime_args);
+        }
+        else{
+            await install_contract_speculative(args, runtime_args);
+        }
     }
     else if(args.packageHash == 'odraERC' && args.pathToWasm == './bin/odra-erc.wasm'){
         let runtime_args = RuntimeArgs.fromMap({
@@ -40,7 +50,12 @@ async function call_install(){
             odra_cfg_is_upgradable: CLValueBuilder.bool(args.allowUpgrade),
             odra_cfg_constructor: CLValueBuilder.string("init")
         });
-        await install_contract_speculative(args, runtime_args);
+        if (args.isSpeculativeExecution == false){
+            await install_contract(args, runtime_args);
+        }
+        else{
+            await install_contract_speculative(args, runtime_args);
+        }
     }
 }
 call_install();
