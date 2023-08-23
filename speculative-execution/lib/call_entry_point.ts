@@ -1,6 +1,9 @@
-const { CasperClient, Contracts, DeployUtil } = require("casper-js-sdk");
-const { public_key_bytes } = require('./types');
-const { KeyManager } = require('./keymanager');
+//const { CasperClient, Contracts, DeployUtil } = require("casper-js-sdk");
+//const { public_key_bytes } = require('./types');
+//const { KeyManager } = require('./keymanager');
+import { KeyManager } from "./keymanager";
+import { public_key_bytes } from "./types";
+import { CasperClient, Contracts, DeployUtil } from "casper-js-sdk";
 
 export async function call_contract(args: any, runtime_args: any){
   const client = new CasperClient(args.nodeHost);
@@ -12,16 +15,6 @@ export async function call_contract(args: any, runtime_args: any){
   let resp = await signedDeploy.send(args.nodeHost);
   await console.log("Deploy Result: ", resp);
   return resp;
-  /*
-  const result = signedDeploy.send(args.nodeHost).then((res: any) => {
-    console.log("Deploy Result: ", res);
-    return res;
-  }).catch((error: any) => {
-    console.log("Error: ", error);
-    return error;
-  });
-  return result;
-  */
 }
 
 export async function call_contract_speculative(args: any, runtime_args: any){

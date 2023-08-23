@@ -1,5 +1,6 @@
-const { Keys, CasperClient, Contracts, RuntimeArgs, CLValueBuilder, CLKey, CLByteArray, u8 } = require("casper-js-sdk");
-const fs = require("fs");
+import { Keys, CasperClient, Contracts, RuntimeArgs, CLValueBuilder, CLKey, CLByteArray } from "casper-js-sdk";
+import * as fs from "fs";
+
 
 export async function install_contract_speculative(args: any, runtime_args: any){
     const client = new CasperClient(args.nodeHost);

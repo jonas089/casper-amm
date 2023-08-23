@@ -2,8 +2,6 @@ import { CLValue, CLValueBuilder, RuntimeArgs } from "casper-js-sdk";
 import { cl_key_constructor } from "./lib/types";
 import default_args from "./lib/global_args";
 import { install_contract_speculative, install_contract } from "./lib/install_contract";
-const fs = require("fs");
-const program = require('commander');
 
 async function call_install(){
     let args = default_args();

@@ -2,8 +2,6 @@ import { CLValue, CLValueBuilder, RuntimeArgs } from "casper-js-sdk";
 import { cl_key_constructor } from "./lib/types";
 import default_args from "./lib/global_args";
 import { call_contract, call_contract_speculative } from './lib/call_entry_point';
-const fs = require("fs");
-const program = require('commander');
 
 async function add_liquidity() {
     let args = default_args();
