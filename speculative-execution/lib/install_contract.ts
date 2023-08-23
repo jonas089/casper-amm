@@ -24,16 +24,13 @@ export async function install_contract(args: any, runtime_args: any){
     const contract = new Contracts.Contract(client);
     const contractWasm = new Uint8Array(fs.readFileSync(args.pathToWasm).buffer);
     const runtimeArguments = runtime_args;
-
-    const secretKey = "../bin/secret_key.pem";
-    const chainId = "casper-net-1";
     const keypair = Keys.Ed25519.loadKeyPairFromPrivateFile(args.secretKey);
     const deploy = await contract.install(
         contractWasm,
         runtimeArguments,
         args.paymentAmount.toString(),
         keypair.publicKey,
-        chainId,
+        args.chainName,
         [keypair]
     );
     let resp = await client.putDeploy(deploy);

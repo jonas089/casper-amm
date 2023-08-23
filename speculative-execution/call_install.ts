@@ -19,7 +19,7 @@ async function call_install(){
             odra_cfg_is_upgradable: CLValueBuilder.bool(args.allowUpgrade),
             odra_cfg_constructor: CLValueBuilder.string("init")
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await install_contract(args, runtime_args);
         }
         else{
@@ -32,7 +32,7 @@ async function call_install(){
             token0: cl_key_constructor(args.token0Address),
             token1: cl_key_constructor(args.token1Address)
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await install_contract(args, runtime_args);
         }
         else{
@@ -50,7 +50,7 @@ async function call_install(){
             odra_cfg_is_upgradable: CLValueBuilder.bool(args.allowUpgrade),
             odra_cfg_constructor: CLValueBuilder.string("init")
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await install_contract(args, runtime_args);
         }
         else{

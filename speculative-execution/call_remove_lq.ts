@@ -13,7 +13,7 @@ async function add_liquidity() {
         let runtime_args = RuntimeArgs.fromMap({
             shares: CLValueBuilder.u512(args.sharesCount),
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await call_contract(args, runtime_args);
         }
         else{
@@ -25,7 +25,7 @@ async function add_liquidity() {
         let runtime_args = RuntimeArgs.fromMap({
             shares: CLValueBuilder.u256(args.sharesCount),
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await call_contract(args, runtime_args);
         }
         else{

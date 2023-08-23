@@ -5,7 +5,7 @@ export default function default_args() {
         .option('-secret, --secret-key <string>', 'Path to active secret key', './bin/secret_key.pem')
         .option('-wasm --path-to-wasm <string>', 'Path to contract wasm', './bin/odraAMM.wasm')
         .option('-chain --chain-name <string>', 'Casper network name', 'casper-net-1')
-        .option('-payment --payment-amount <number>', 'Payment amount for deploy', 200000000000) //default payment 150 casper
+        .option('-payment --payment-amount <number>', 'Payment amount for deploy', 200000000000)
         .option('-host --node-host <string>', 'Node address', 'http://127.0.0.1:25101/rpc')
         .option('-port --node-rpc-port <number>', 'Node rpc port', 25101)
         .option('-lq_token_address, --lq-token-address <string>', 'Address of lq token', '9356c4eadbc9cb5dcbf33a5c02af6a4534b12a03837b8503832ab9d69d3e6fa9')
@@ -25,7 +25,7 @@ export default function default_args() {
 
         // swap args
         .option('-amount --swap-amount <number>', 'Amount of input token to be swapped for output token', 10)
-        .option('-input-hash --input-token-hash <string>', 'Hash of input token', '9356c4eadbc9cb5dcbf33a5c02af6a4534b12a03837b8503832ab9d69d3e6fa9')
+        .option('-input-hash --input-token-hash <string>', 'Address of input token', '9356c4eadbc9cb5dcbf33a5c02af6a4534b12a03837b8503832ab9d69d3e6fa9')
 
         // contract hash with EP
         .option('-contract --contract-hash <string>', 'Hash of the contract to be called', 'hash-')

@@ -14,7 +14,7 @@ async function add_liquidity() {
             amount: CLValueBuilder.u512(args.swapAmount),
             fromToken: cl_key_constructor(args.inputTokenHash)
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await call_contract(args, runtime_args);
         }
         else{
@@ -27,7 +27,7 @@ async function add_liquidity() {
             amount: CLValueBuilder.u256(args.swapAmount),
             fromToken: cl_key_constructor(args.inputTokenHash)
         });
-        if (args.isSpeculativeExecution == false){
+        if (args.isSpeculativeExecution == 'false'){
             await call_contract(args, runtime_args);
         }
         else{
