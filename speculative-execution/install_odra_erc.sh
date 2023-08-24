@@ -1,0 +1,1 @@
+ts-node call_install.ts --path-to-wasm ./bin/odra-erc.wasm  --odra-erc-name $1 --odra-erc-symbol $2 --is-speculative-execution false --node-host http://127.0.0.1:11101/rpc --node-rpc-port 11101 --package-hash $3 --odra-initial-supply 10000

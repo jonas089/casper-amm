@@ -19,6 +19,7 @@ async function add_liquidity() {
             await call_contract_speculative(args, runtime_args);
         };
     }
+    /*
     else if (args.packageHash == 'ammContract'){
         // amount0, amount1 : U256
         let runtime_args = RuntimeArgs.fromMap({
@@ -32,6 +33,7 @@ async function add_liquidity() {
             await call_contract_speculative(args, runtime_args);
         };
     }
+    */
 }
 
 add_liquidity();
