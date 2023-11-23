@@ -1,6 +1,6 @@
-contractAMM/tests/target/
-contractAMM/contract/target/
+amm-contract/tests/target/
+amm-contract/contract/target/
 cep18/tests/target/
 cep18/cep18/target/
 cep18/target/
-contractAMM/speculative-execution/node_modules/
+amm-contract/speculative-execution/node_modules/
